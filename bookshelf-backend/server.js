@@ -1,6 +1,11 @@
 const express = require('express');
 const cors    = require('cors');
 require('dotenv').config();
+console.log('auth:', require('./routes/authRoutes'));
+console.log('books:', require('./routes/bookRoutes'));
+console.log('reviews:', require('./routes/reviewRoutes'));
+console.log('reviewDirect:', require('./routes/reviewDirectRoutes'));
+console.log('comments:', require('./routes/commentRoutes'));
 
 const authRoutes         = require('./routes/authRoutes');
 const bookRoutes         = require('./routes/bookRoutes');
