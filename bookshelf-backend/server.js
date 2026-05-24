@@ -1,21 +1,25 @@
-
 const express = require('express');
 const cors    = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/authRoutes');
+const authRoutes         = require('./routes/authRoutes');
+const bookRoutes         = require('./routes/bookRoutes');
+const reviewRoutes       = require('./routes/reviewRoutes');
+const reviewDirectRoutes = require('./routes/reviewDirectRoutes');
+const commentRoutes      = require('./routes/commentRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
-app.use(cors());               // allow cross-origin requests from your React app
-app.use(express.json());       // parse incoming JSON bodies
+app.use(cors());
+app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',                      authRoutes);
+app.use('/api/books',                     bookRoutes);
+app.use('/api/books/:bookId/reviews',     reviewRoutes);
+app.use('/api/reviews',                   reviewDirectRoutes);
+app.use('/api/reviews/:reviewId/comments', commentRoutes);
 
-// Quick health check
 app.get('/', (req, res) => {
   res.json({ message: 'BookShelf API is running' });
 });

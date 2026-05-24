@@ -42,3 +42,16 @@ CREATE TABLE user_books (
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(user_id, book_id)
 );
+\c bookshelf_db
+
+CREATE TABLE comments (
+  id         SERIAL PRIMARY KEY,
+  review_id  INT NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+  user_id    INT NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+  parent_id  INT REFERENCES comments(id) ON DELETE CASCADE,
+  body       TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX ON comments(review_id);
+CREATE INDEX ON comments(parent_id);
