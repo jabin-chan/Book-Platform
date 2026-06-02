@@ -18,7 +18,7 @@ export default function Navbar() {
       </Link>
 
       <div className="flex items-center gap-5">
-        <Link to="/" className="text-coffee-300 hover:text-coffee-100 text-sm font-sans transition">
+        <Link to="/books" className="text-coffee-300 hover:text-coffee-100 text-sm font-sans transition">
           Browse
         </Link>
 
