@@ -16,12 +16,12 @@ export default function ReviewForm({ bookId, onReviewPosted }) {
     setError('');
 
     if (rating === 0) { setError('Please pick a star rating'); return; }
-    if (body.trim().length < 10) { setError('Review must be at least 10 characters'); return; }
+    // ← removed the body length check, that's it
 
     setLoading(true);
     try {
       const res = await api.post(`/books/${bookId}/reviews`, { rating, body });
-      onReviewPosted(res.data);   // bubble the new review up to the parent
+      onReviewPosted(res.data);
       setRating(0);
       setBody('');
     } catch (err) {
@@ -31,7 +31,6 @@ export default function ReviewForm({ bookId, onReviewPosted }) {
     }
   };
 
-  // not logged in — show prompt instead of form
   if (!token) {
     return (
       <p className="font-sans text-xs text-coffee-400 text-center py-3">
@@ -68,7 +67,7 @@ export default function ReviewForm({ bookId, onReviewPosted }) {
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="What did you think of this book?"
+        placeholder="What did you think? (optional)"  /* ← updated placeholder */
         rows={3}
         className="w-full border border-coffee-200 rounded px-3 py-2 font-sans text-xs text-coffee-700 bg-coffee-50 resize-none focus:outline-none focus:border-coffee-400"
       />

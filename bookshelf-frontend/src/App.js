@@ -6,6 +6,9 @@ import Home from "./pages/Home";
 import Books from "./pages/Books";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Explore from './pages/Explore';
+import MyShelf from './pages/MyShelf';
+import Discussion from './pages/Discussion';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -32,6 +35,9 @@ function App() {
             <Route path="/books" element={<Books user={user} />} />
             <Route path="/login" element={user ? <Navigate to="/books" /> : <Login onLogin={handleLogin} />} />
             <Route path="/signup" element={user ? <Navigate to="/books" /> : <Signup onLogin={handleLogin} />} />
+            <Route path="/explore" element={<Explore user={user} />} />
+            <Route path="/shelf" element={<MyShelf user={user} />} />
+            <Route path="/books/:bookId/discussion" element={<Discussion user={user} />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

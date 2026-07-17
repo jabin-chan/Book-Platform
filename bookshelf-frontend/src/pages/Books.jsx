@@ -91,36 +91,25 @@ export default function Books({ user }) {
                 {books.length} books • sorted by newest
               </p>
             </div>
-
-            {user && (
-              <button
-                onClick={() => {
-                  setModalBook(null);
-                  setManualTitle("");
-                  setShowModal(true);
-                }}
-                className="bg-[#5c3d2e] hover:bg-[#3d2b1f] text-[#faf7f2] text-sm px-4 py-2 rounded-xl transition-colors"
-              >
-                + Add manually
-              </button>
-            )}
           </div>
 
-          <SearchBar
-            onSelectBook={(book) => {
-              if (book.source === "db") {
-                handleSelectBook(book);
-              } else {
-                setModalBook(book);
+          {user && (
+            <SearchBar
+              onSelectBook={(book) => {
+                if (book.source === "db") {
+                  handleSelectBook(book);
+                } else {
+                  setModalBook(book);
+                  setShowModal(true);
+                }
+              }}
+              onAddManually={(title) => {
+                setModalBook(null);
+                setManualTitle(title);
                 setShowModal(true);
-              }
-            }}
-            onAddManually={(title) => {
-              setModalBook(null);
-              setManualTitle(title);
-              setShowModal(true);
-            }}
-          />
+              }}
+            />
+          )}
         </div>
 
         {/* BOOK GRID */}

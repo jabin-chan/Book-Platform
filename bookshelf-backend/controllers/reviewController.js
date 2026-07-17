@@ -1,6 +1,6 @@
 const pool = require('../db/pool');
 
-//  GET reviews for a book 
+// GET reviews for a book 
 const getReviews = async (req, res) => {
   const { bookId } = req.params;
   try {
@@ -22,12 +22,11 @@ const createReview = async (req, res) => {
   const { bookId } = req.params;
   const { rating, body } = req.body;
 
-  if (!rating || !body)
-    return res.status(400).json({ error: 'Rating and body are required' });
+  // only rating is required now, body is optional
+  if (!rating)
+    return res.status(400).json({ error: 'Rating is required' });
   if (!Number.isInteger(Number(rating)) || rating < 1 || rating > 5)
     return res.status(400).json({ error: 'Rating must be 1–5' });
-  if (body.trim().length < 10)
-    return res.status(400).json({ error: 'Review must be at least 10 characters' });
 
   try {
     const bookCheck = await pool.query('SELECT id FROM books WHERE id = $1', [bookId]);
@@ -37,7 +36,7 @@ const createReview = async (req, res) => {
     const result = await pool.query(`
       INSERT INTO reviews (user_id, book_id, rating, body)
       VALUES ($1, $2, $3, $4) RETURNING *
-    `, [req.user.id, bookId, rating, body.trim()]);
+    `, [req.user.id, bookId, rating, body?.trim() || '']);
 
     res.status(201).json({ ...result.rows[0], username: req.user.username });
   } catch (err) {
@@ -47,17 +46,15 @@ const createReview = async (req, res) => {
   }
 };
 
-//  UPDATE a review 
+// UPDATE a review 
 const updateReview = async (req, res) => {
   const { id } = req.params;
   const { rating, body } = req.body;
 
-  if (!rating || !body)
-    return res.status(400).json({ error: 'Rating and body are required' });
+  if (!rating)
+    return res.status(400).json({ error: 'Rating is required' });
   if (!Number.isInteger(Number(rating)) || rating < 1 || rating > 5)
     return res.status(400).json({ error: 'Rating must be 1–5' });
-  if (body.trim().length < 10)
-    return res.status(400).json({ error: 'Review must be at least 10 characters' });
 
   try {
     const existing = await pool.query('SELECT * FROM reviews WHERE id = $1', [id]);
@@ -68,15 +65,15 @@ const updateReview = async (req, res) => {
 
     const result = await pool.query(`
       UPDATE reviews SET rating = $1, body = $2 WHERE id = $3 RETURNING *
-    `, [rating, body.trim(), id]);
+    `, [rating, body?.trim() || '', id]);
 
-    res.json(result.rows[0]);
+    res.json({ ...result.rows[0], username: req.user.username });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update review' });
   }
 };
 
-//  DELETE a review 
+// DELETE a review 
 const deleteReview = async (req, res) => {
   const { id } = req.params;
   try {
@@ -93,15 +90,10 @@ const deleteReview = async (req, res) => {
   }
 };
 
-
-
-// GET all comments for a review (as a nested tree)
-// GET /api/reviews/:reviewId/comments
+// GET all comments for a review (nested tree)
 const getComments = async (req, res) => {
   const { reviewId } = req.params;
   try {
-    // Fetch every comment for this review in one query,
-    // oldest first so parent always appears before its children
     const result = await pool.query(`
       SELECT comments.*, users.username
       FROM comments
@@ -110,21 +102,16 @@ const getComments = async (req, res) => {
       ORDER BY comments.created_at ASC
     `, [reviewId]);
 
-    // Build nested tree in JS 
-    // Step 1: index every comment by id
     const map = {};
     result.rows.forEach(row => {
       map[row.id] = { ...row, replies: [] };
     });
 
-    // Step 2: put each comment inside its parent's replies array
     const roots = [];
     result.rows.forEach(row => {
       if (row.parent_id === null) {
-        // No parent = top-level comment on the review
         roots.push(map[row.id]);
       } else {
-        // Has a parent = nest inside that comment's replies
         if (map[row.parent_id]) {
           map[row.parent_id].replies.push(map[row.id]);
         }
@@ -132,18 +119,12 @@ const getComments = async (req, res) => {
     });
 
     res.json(roots);
-    // Each root looks like:
-    // { id, body, username, replies: [ { id, body, username, replies: [] } ] }
-
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
 };
 
-// POST a comment on a review 
-// POST /api/reviews/:reviewId/comments
-// body: { body, parent_id? }
-// parent_id is optional — omit it for a top-level reply
+// POST a comment on a review
 const createComment = async (req, res) => {
   const { reviewId } = req.params;
   const { body, parent_id } = req.body;
@@ -154,15 +135,12 @@ const createComment = async (req, res) => {
     return res.status(400).json({ error: 'Comment must be under 1000 characters' });
 
   try {
-    // Make sure the review exists
     const reviewCheck = await pool.query(
       'SELECT id FROM reviews WHERE id = $1', [reviewId]
     );
     if (reviewCheck.rows.length === 0)
       return res.status(404).json({ error: 'Review not found' });
 
-    // If a parent_id was given, make sure it belongs to the same review
-    // (prevents someone nesting a reply under a comment from a different review)
     if (parent_id) {
       const parentCheck = await pool.query(
         'SELECT id FROM comments WHERE id = $1 AND review_id = $2',
@@ -178,14 +156,12 @@ const createComment = async (req, res) => {
     `, [reviewId, req.user.id, parent_id || null, body.trim()]);
 
     res.status(201).json({ ...result.rows[0], username: req.user.username, replies: [] });
-
   } catch (err) {
     res.status(500).json({ error: 'Failed to create comment' });
   }
 };
 
-// UPDATE a comment 
-// PUT /api/comments/:id
+// UPDATE a comment
 const updateComment = async (req, res) => {
   const { id } = req.params;
   const { body } = req.body;
@@ -212,9 +188,7 @@ const updateComment = async (req, res) => {
   }
 };
 
-// DELETE a comment 
-// DELETE /api/comments/:id
-// Deleting a parent also deletes all its child replies (ON DELETE CASCADE)
+// DELETE a comment
 const deleteComment = async (req, res) => {
   const { id } = req.params;
   try {
