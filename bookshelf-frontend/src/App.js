@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -10,8 +10,9 @@ import Explore from './pages/Explore';
 import MyShelf from './pages/MyShelf';
 import Discussion from './pages/Discussion';
 
-function App() {
+function AppLayout() {
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     try {
@@ -25,23 +26,34 @@ function App() {
   const handleLogin = (userData) => setUser(userData);
   const handleLogout = () => setUser(null);
 
+  // Landing/auth pages have their own full-bleed centered card and don't
+  // want the top nav competing with it
+  const noNavRoutes = ["/"];;
+  const showNav = !noNavRoutes.includes(location.pathname);
+
+  return (
+    <div className="min-h-screen bg-[#FBEDD1]">
+      {showNav && <Navbar user={user} onLogout={handleLogout} />}
+      <main className={showNav ? "pt-16" : ""}>
+        <Routes>
+          <Route path="/" element={<Home user={user} />} />
+          <Route path="/books" element={<Books user={user} />} />
+          <Route path="/login" element={user ? <Navigate to="/books" /> : <Login onLogin={handleLogin} />} />
+          <Route path="/signup" element={user ? <Navigate to="/books" /> : <Signup onLogin={handleLogin} />} />
+          <Route path="/explore" element={<Explore user={user} />} />
+          <Route path="/shelf" element={<MyShelf user={user} />} />
+          <Route path="/books/:bookId/discussion" element={<Discussion user={user} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+function App() {
   return (
     <Router>
-      <div className="flex min-h-screen bg-[#f5ede0]">
-        <Navbar user={user} onLogout={handleLogout} />
-        <main className="flex-1 ml-56">
-          <Routes>
-            <Route path="/" element={<Home user={user} />} />
-            <Route path="/books" element={<Books user={user} />} />
-            <Route path="/login" element={user ? <Navigate to="/books" /> : <Login onLogin={handleLogin} />} />
-            <Route path="/signup" element={user ? <Navigate to="/books" /> : <Signup onLogin={handleLogin} />} />
-            <Route path="/explore" element={<Explore user={user} />} />
-            <Route path="/shelf" element={<MyShelf user={user} />} />
-            <Route path="/books/:bookId/discussion" element={<Discussion user={user} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-      </div>
+      <AppLayout />
     </Router>
   );
 }

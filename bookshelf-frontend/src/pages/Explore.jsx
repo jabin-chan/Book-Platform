@@ -1,3 +1,4 @@
+import { getGenreColor } from '../utils/genreColors';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import api from '../api';
 import ExplorePanel from '../components/ExplorePanel';
@@ -9,34 +10,16 @@ const GENRES = [
   'Historical Fiction',
 ];
 
-const GENRE_COLORS = {
-  fantasy:             { bg: '#e8d5f5', spine: '#9b5de5' },
-  'sci-fi':            { bg: '#d0eaff', spine: '#3a86ff' },
-  'science fiction':   { bg: '#d0eaff', spine: '#3a86ff' },
-  romance:             { bg: '#ffd6e0', spine: '#ff6b9d' },
-  mystery:             { bg: '#d4f1e4', spine: '#2dc653' },
-  thriller:            { bg: '#ffe5d9', spine: '#e07a5f' },
-  horror:              { bg: '#f0d6f5', spine: '#7b2d8b' },
-  nonfiction:          { bg: '#fff3cd', spine: '#f4a261' },
-  'non-fiction':       { bg: '#fff3cd', spine: '#f4a261' },
-  'self-help':         { bg: '#fff3cd', spine: '#f4a261' },
-  memoir:              { bg: '#ffebc8', spine: '#e9c46a' },
-  history:             { bg: '#dde5b6', spine: '#6a994e' },
-  biography:           { bg: '#dde5b6', spine: '#6a994e' },
-  fiction:             { bg: '#f5e6d3', spine: '#8b6b4e' },
-  'literary fiction':  { bg: '#f5e6d3', spine: '#c97d4e' },
-  'historical fiction':{ bg: '#dde5b6', spine: '#8b7355' },
-  default:             { bg: '#f5e6d3', spine: '#8b6b4e' },
-};
+
 
 function getColor(genre) {
-  if (!genre) return GENRE_COLORS.default;
-  const first = genre.split(',')[0].trim().toLowerCase();
-  return GENRE_COLORS[first] || GENRE_COLORS.default;
+    if (!genre) return GENRE_COLORS.default;
+    const first = genre.split(',')[0].trim().toLowerCase();
+    return GENRE_COLORS[first] || GENRE_COLORS.default;
 }
 
 function BookTile({ book, onClick }) {
-  const color = getColor(book.genre);
+  const color = getGenreColor(book.genre);
   const stars = Math.round(parseFloat(book.avg_rating) || 0);
   const hasCover = !!(book.cover_url || book.cover);
   const coverSrc = book.cover_url || book.cover;
@@ -44,11 +27,11 @@ function BookTile({ book, onClick }) {
   return (
     <div onClick={() => onClick(book)} className="group cursor-pointer flex flex-col items-center">
       <div
-        className="relative w-24 h-32 rounded-sm transition-transform duration-200 group-hover:-translate-y-3 group-hover:shadow-xl overflow-hidden"
+        className="relative w-24 h-32 rounded-md transition-transform duration-200 group-hover:-translate-y-2 overflow-hidden"
         style={{
           backgroundColor: color.bg,
-          boxShadow: `3px 3px 0 ${color.spine}`,
-          border: `2px solid ${color.spine}`,
+          boxShadow: `4px 4px 0 ${color.spine}`,
+          border: `2.5px solid ${color.spine}`,
         }}
       >
         <div className="absolute left-0 top-0 bottom-0 w-3 z-10" style={{ backgroundColor: color.spine }} />
@@ -73,24 +56,24 @@ function BookTile({ book, onClick }) {
                 {'★'.repeat(stars)}{'☆'.repeat(5 - stars)}
               </p>
               {book.review_count > 0 && (
-                <p className="text-[8px] text-[#8b6b4e]">{book.review_count} reviews</p>
+                <p className="text-[8px] text-[#4A3423]/70">{book.review_count} reviews</p>
               )}
             </div>
           </>
         )}
 
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center z-20">
-          <span className="opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-white bg-black bg-opacity-60 px-2 py-1 rounded transition-opacity">
+          <span className="opacity-0 group-hover:opacity-100 text-[10px] font-semibold text-white bg-black bg-opacity-60 px-2 py-1 rounded-full transition-opacity">
             View
           </span>
         </div>
       </div>
 
       <div className="mt-2 text-center w-24">
-        <p className="text-[11px] font-semibold text-[#3d2b1f] leading-tight line-clamp-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <p className="text-[11px] font-semibold text-[#4A3423] leading-tight line-clamp-2" style={{ fontFamily: 'Georgia, serif' }}>
           {book.title}
         </p>
-        <p className="text-[10px] text-[#8b6b4e] mt-0.5 truncate">{book.author}</p>
+        <p className="text-[10px] text-[#4A3423]/60 mt-0.5 truncate">{book.author}</p>
       </div>
     </div>
   );
@@ -102,7 +85,7 @@ export default function Explore({ user }) {
   const [selected, setSelected] = useState(null);
   const [genre, setGenre] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(null); // null = not searching
+  const [searchResults, setSearchResults] = useState(null);
   const [googlePage, setGooglePage] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -110,14 +93,12 @@ export default function Explore({ user }) {
   const loaderRef = useRef(null);
   const debounceRef = useRef(null);
 
-  // Load DB books on mount
   useEffect(() => {
     api.get('/books').then(res => setDbBooks(res.data)).catch(() => {});
   }, []);
 
-  // Load Google Books when genre changes and not searching
   useEffect(() => {
-    if (searchResults !== null) return; // don't interfere with search
+    if (searchResults !== null) return;
     setGoogleBooks([]);
     setGooglePage(0);
     setHasMore(true);
@@ -142,13 +123,12 @@ export default function Explore({ user }) {
     }
   };
 
-  // Search — debounced, hits both your DB and Google
   const handleSearchChange = (e) => {
     const val = e.target.value;
     setSearchQuery(val);
 
     if (!val.trim()) {
-      setSearchResults(null); // back to browse mode
+      setSearchResults(null);
       return;
     }
 
@@ -174,7 +154,6 @@ export default function Explore({ user }) {
     setSearchResults(null);
   };
 
-  // Infinite scroll
   const handleObserver = useCallback((entries) => {
     if (entries[0].isIntersecting && hasMore && !loadingMore && searchResults === null) {
       fetchGoogleBooks(googlePage, genre);
@@ -187,11 +166,10 @@ export default function Explore({ user }) {
     return () => observer.disconnect();
   }, [handleObserver]);
 
-// Community picks = has reviews OR was added by a real user
-const communityBooks = dbBooks.filter(
+  const communityBooks = dbBooks.filter(
     b => parseInt(b.review_count) > 0 || b.added_by !== null
   );
-  
+
   const filteredDb = genre === 'All'
     ? communityBooks
     : communityBooks.filter(b => b.genre?.toLowerCase().includes(genre.toLowerCase()));
@@ -201,48 +179,45 @@ const communityBooks = dbBooks.filter(
   const isSearching = searchResults !== null;
 
   return (
-    <div className="flex min-h-screen bg-[#f5ede0]">
+    <div className="flex min-h-screen bg-[#FBEDD1]">
       <div
         className="flex-1 px-6 py-6 overflow-y-auto"
         style={{ maxWidth: selected ? 'calc(100% - 384px)' : '100%' }}
       >
         {/* Header */}
         <div className="mb-5">
-          <h1 className="text-2xl font-bold text-[#3d2b1f]" style={{ fontFamily: 'Georgia, serif' }}>
+          <h1 className="text-2xl font-bold text-[#4A3423]" style={{ fontFamily: 'Georgia, serif' }}>
             Explore the Library 📖
           </h1>
-          <p className="text-sm text-[#8b6b4e] mt-0.5">Discover what everyone's reading</p>
+          <p className="text-sm text-[#4A3423]/60 mt-0.5">Discover what everyone's reading</p>
         </div>
 
         {/* Search + Genre row */}
         <div className="flex gap-3 mb-6 items-center">
-
-          {/* Search input */}
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#b89a7a] text-sm">🔍</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A3423]/50 text-sm">🔍</span>
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="Search books, authors..."
-              className="w-full pl-9 pr-9 py-2.5 bg-white border border-[#d6b896] rounded-xl text-[#3d2b1f] placeholder-[#b89a7a] focus:outline-none focus:ring-2 focus:ring-[#c9956a] text-sm"
+              className="w-full pl-10 pr-9 py-2.5 bg-[#FFFDF6] border-[2.5px] border-[#4A3423] rounded-2xl text-[#4A3423] placeholder-[#4A3423]/40 focus:outline-none focus:ring-4 focus:ring-[#A3B899]/30 text-sm"
             />
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b89a7a] hover:text-[#3d2b1f] text-lg leading-none"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4A3423]/50 hover:text-[#4A3423] text-lg leading-none"
               >
                 ×
               </button>
             )}
           </div>
 
-          {/* Genre dropdown — hidden while searching */}
           {!isSearching && (
             <select
               value={genre}
               onChange={(e) => setGenre(e.target.value)}
-              className="px-3 py-2.5 bg-white border border-[#d6b896] rounded-xl text-[#3d2b1f] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9956a] cursor-pointer"
+              className="px-3 py-2.5 bg-[#FFFDF6] border-[2.5px] border-[#4A3423] rounded-2xl text-[#4A3423] text-sm focus:outline-none focus:ring-4 focus:ring-[#A3B899]/30 cursor-pointer"
             >
               {GENRES.map(g => (
                 <option key={g} value={g}>{g === 'All' ? 'All Genres' : g}</option>
@@ -255,13 +230,12 @@ const communityBooks = dbBooks.filter(
         {isSearching && (
           <div>
             {loadingSearch ? (
-              <p className="text-sm text-[#8b6b4e] animate-pulse">Searching...</p>
+              <p className="text-sm text-[#4A3423]/60 animate-pulse">Searching...</p>
             ) : (
               <>
-                {/* DB results */}
                 {searchResults.db.length > 0 && (
                   <div className="mb-8">
-                    <p className="text-xs font-semibold text-[#8b6b4e] uppercase tracking-widest mb-4">
+                    <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
                       ✨ In your community library
                     </p>
                     <div className="flex flex-wrap gap-6">
@@ -274,10 +248,9 @@ const communityBooks = dbBooks.filter(
                   </div>
                 )}
 
-                {/* Google results */}
                 {searchResults.google.length > 0 && (
                   <div className="mb-8">
-                    <p className="text-xs font-semibold text-[#8b6b4e] uppercase tracking-widest mb-4">
+                    <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
                       📚 From the wider library
                     </p>
                     <div className="flex flex-wrap gap-6">
@@ -295,7 +268,7 @@ const communityBooks = dbBooks.filter(
                 {searchResults.db.length === 0 && searchResults.google.length === 0 && (
                   <div className="text-center py-16">
                     <p className="text-4xl mb-3">🔍</p>
-                    <p className="text-[#8b6b4e] text-sm">No results for "{searchQuery}"</p>
+                    <p className="text-[#4A3423]/60 text-sm">No results for "{searchQuery}"</p>
                   </div>
                 )}
               </>
@@ -306,10 +279,9 @@ const communityBooks = dbBooks.filter(
         {/* BROWSE MODE */}
         {!isSearching && (
           <>
-            {/* Community picks */}
             {filteredDb.length > 0 && (
               <div className="mb-8">
-                <p className="text-xs font-semibold text-[#8b6b4e] uppercase tracking-widest mb-4">
+                <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
                   ✨ Community picks
                 </p>
                 <div className="flex flex-wrap gap-6">
@@ -322,10 +294,9 @@ const communityBooks = dbBooks.filter(
               </div>
             )}
 
-            {/* Google Books */}
             {filteredGoogle.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-semibold text-[#8b6b4e] uppercase tracking-widest mb-4">
+                <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
                   📚 From the wider library
                 </p>
                 <div className="flex flex-wrap gap-6">
@@ -338,13 +309,12 @@ const communityBooks = dbBooks.filter(
               </div>
             )}
 
-            {/* Infinite scroll trigger */}
             <div ref={loaderRef} className="text-center py-6">
               {loadingMore && (
-                <p className="text-sm text-[#8b6b4e] animate-pulse">Loading more books...</p>
+                <p className="text-sm text-[#4A3423]/60 animate-pulse">Loading more books...</p>
               )}
               {!hasMore && !loadingMore && (
-                <p className="text-xs text-[#b89a7a]">You've reached the end of the library ☕</p>
+                <p className="text-xs text-[#4A3423]/50">You've reached the end of the library ☕</p>
               )}
             </div>
           </>
@@ -353,7 +323,7 @@ const communityBooks = dbBooks.filter(
 
       {/* Right panel */}
       {selected && (
-        <div className="w-96 border-l border-[#e0c9b0] bg-[#faf7f2] fixed right-0 top-0 bottom-0 overflow-y-auto z-10 shadow-xl">
+        <div className="w-96 border-l-[3px] border-[#4A3423] bg-[#FFFDF6] fixed right-0 top-16 bottom-0 overflow-y-auto z-10 shadow-[-6px_0_0_rgba(74,52,35,0.08)]">
           <ExplorePanel
             book={selected}
             user={user}

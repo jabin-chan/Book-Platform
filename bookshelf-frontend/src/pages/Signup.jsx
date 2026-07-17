@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { BookOpen, AlertCircle } from "lucide-react";
 import api from "../api";
 
 export default function Signup({ onLogin }) {
@@ -20,7 +21,7 @@ export default function Signup({ onLogin }) {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       onLogin && onLogin(res.data.user);
-      navigate("/books");
+      navigate("/shelf");
     } catch (err) {
       setError(err.response?.data?.message || "Couldn't create account. Try again.");
     } finally {
@@ -29,21 +30,28 @@ export default function Signup({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5ede0]">
-      <div className="w-full max-w-md px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBEDD1] px-4">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          {/* PASTE_ICON: book open SVG here */}
-          <span className="text-5xl block mb-3">📖</span>
-          <h1 className="text-3xl font-bold text-[#3d2b1f]" style={{ fontFamily: "Georgia, serif" }}>
+          <BookOpen size={44} className="mx-auto mb-3 text-[#4A3423]" strokeWidth={1.6} />
+          <h1 className="text-3xl font-bold text-[#4A3423]" style={{ fontFamily: "Georgia, serif" }}>
             Join Brewed Pages
           </h1>
-          <p className="text-[#8b6b4e] text-sm mt-1">Find your reading community</p>
+          <p className="text-[#4A3423]/60 text-sm mt-1">Find your reading community</p>
         </div>
 
-        <div className="bg-[#faf7f2] rounded-2xl shadow-md border border-[#e8d5c0] p-8">
+        <div
+          className="bg-[#FFFDF6] p-8"
+          style={{
+            borderRadius: "20px 28px 18px 30px",
+            border: "3.5px solid #4A3423",
+            boxShadow: "7px 7px 0 rgba(74,52,35,0.9)",
+          }}
+        >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2 mb-4 text-sm">
-              {error}
+            <div className="flex items-start gap-2 bg-[#FBEDD1] border-2 border-[#4A3423] rounded-xl px-4 py-2.5 mb-4 text-sm text-[#4A3423]">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
@@ -54,7 +62,7 @@ export default function Signup({ onLogin }) {
               { name: "password", label: "Password", type: "password", placeholder: "••••••••" },
             ].map(({ name, label, type, placeholder }) => (
               <div key={name}>
-                <label className="block text-sm font-medium text-[#5c3d2e] mb-1">{label}</label>
+                <label className="block text-sm font-medium text-[#4A3423] mb-1">{label}</label>
                 <input
                   type={type}
                   name={name}
@@ -62,22 +70,22 @@ export default function Signup({ onLogin }) {
                   onChange={handleChange}
                   required
                   placeholder={placeholder}
-                  className="w-full px-4 py-2.5 bg-white border border-[#d6b896] rounded-xl text-[#3d2b1f] placeholder-[#b89a7a] focus:outline-none focus:ring-2 focus:ring-[#c9956a] text-sm"
+                  className="w-full px-4 py-2.5 bg-[#FFFDF6] border-2 border-[#D8C69B] rounded-xl text-[#4A3423] placeholder-[#4A3423]/35 focus:outline-none focus:border-[#4A3423] focus:ring-4 focus:ring-[#A3B899]/25 text-sm transition-all"
                 />
               </div>
             ))}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#5c3d2e] hover:bg-[#3d2b1f] text-[#faf7f2] font-medium py-2.5 rounded-xl transition-colors text-sm mt-2 disabled:opacity-60"
+              className="w-full bg-[#A3B899] hover:bg-[#93A889] text-[#33422F] font-semibold py-3 rounded-full text-sm mt-2 disabled:opacity-60 border-2 border-[#4A3423] shadow-[4px_4px_0_#4A3423] hover:-translate-y-0.5 hover:shadow-[5px_5px_0_#4A3423] active:translate-y-0 active:shadow-[2px_2px_0_#4A3423] transition-all"
             >
-              {loading ? "Creating account..." : "Create account 📚"}
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-[#8b6b4e] mt-6">
+          <p className="text-center text-sm text-[#4A3423]/70 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-[#5c3d2e] font-medium hover:underline">
+            <Link to="/login" className="text-[#4A3423] font-semibold border-b-2 border-[#A3B899] hover:border-[#4A3423] transition-colors">
               Log in
             </Link>
           </p>
