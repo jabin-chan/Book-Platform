@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Explore from './pages/Explore';
 import MyShelf from './pages/MyShelf';
 import Discussion from './pages/Discussion';
+import Profile from './pages/Profile';
 
 function AppLayout() {
   const [user, setUser] = useState(null);
@@ -44,6 +45,7 @@ function AppLayout() {
           <Route path="/shelf" element={<MyShelf user={user} />} />
           <Route path="/books/:bookId/discussion" element={<Discussion user={user} />} />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/profile" element={<Profile user={user} />} />
         </Routes>
       </main>
     </div>

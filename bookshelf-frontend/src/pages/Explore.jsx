@@ -1,5 +1,6 @@
 import { getGenreColor } from '../utils/genreColors';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { BookOpen, Search, Sparkles, Library, Coffee, SearchX, X } from 'lucide-react';
 import api from '../api';
 import ExplorePanel from '../components/ExplorePanel';
 
@@ -9,14 +10,6 @@ const GENRES = [
   'Memoir', 'History', 'Biography', 'Fiction', 'Literary Fiction',
   'Historical Fiction',
 ];
-
-
-
-function getColor(genre) {
-    if (!genre) return GENRE_COLORS.default;
-    const first = genre.split(',')[0].trim().toLowerCase();
-    return GENRE_COLORS[first] || GENRE_COLORS.default;
-}
 
 function BookTile({ book, onClick }) {
   const color = getGenreColor(book.genre);
@@ -186,8 +179,9 @@ export default function Explore({ user }) {
       >
         {/* Header */}
         <div className="mb-5">
-          <h1 className="text-2xl font-bold text-[#4A3423]" style={{ fontFamily: 'Georgia, serif' }}>
-            Explore the Library 📖
+          <h1 className="flex items-center gap-2 text-2xl font-bold text-[#4A3423]" style={{ fontFamily: 'Georgia, serif' }}>
+            <BookOpen size={24} strokeWidth={2.2} />
+            Explore the Library
           </h1>
           <p className="text-sm text-[#4A3423]/60 mt-0.5">Discover what everyone's reading</p>
         </div>
@@ -195,7 +189,7 @@ export default function Explore({ user }) {
         {/* Search + Genre row */}
         <div className="flex gap-3 mb-6 items-center">
           <div className="relative flex-1">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A3423]/50 text-sm">🔍</span>
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4A3423]/50" />
             <input
               type="text"
               value={searchQuery}
@@ -206,9 +200,9 @@ export default function Explore({ user }) {
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#4A3423]/50 hover:text-[#4A3423] text-lg leading-none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4A3423]/50 hover:text-[#4A3423]"
               >
-                ×
+                <X size={16} />
               </button>
             )}
           </div>
@@ -230,13 +224,14 @@ export default function Explore({ user }) {
         {isSearching && (
           <div>
             {loadingSearch ? (
-              <p className="text-sm text-[#4A3423]/60 animate-pulse">Searching...</p>
+              <p className="text-sm text-[#4A3423]/60 animate-pulse">Searching the shelves...</p>
             ) : (
               <>
                 {searchResults.db.length > 0 && (
                   <div className="mb-8">
-                    <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
-                      ✨ In your community library
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
+                      <Sparkles size={13} />
+                      In your community library
                     </p>
                     <div className="flex flex-wrap gap-6">
                       {searchResults.db.map(book => (
@@ -250,8 +245,9 @@ export default function Explore({ user }) {
 
                 {searchResults.google.length > 0 && (
                   <div className="mb-8">
-                    <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
-                      📚 From the wider library
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
+                      <Library size={13} />
+                      From the wider library
                     </p>
                     <div className="flex flex-wrap gap-6">
                       {searchResults.google
@@ -267,8 +263,8 @@ export default function Explore({ user }) {
 
                 {searchResults.db.length === 0 && searchResults.google.length === 0 && (
                   <div className="text-center py-16">
-                    <p className="text-4xl mb-3">🔍</p>
-                    <p className="text-[#4A3423]/60 text-sm">No results for "{searchQuery}"</p>
+                    <SearchX size={36} className="mx-auto mb-3 text-[#4A3423]/40" strokeWidth={1.5} />
+                    <p className="text-[#4A3423]/60 text-sm">No pages match "{searchQuery}"</p>
                   </div>
                 )}
               </>
@@ -281,8 +277,9 @@ export default function Explore({ user }) {
           <>
             {filteredDb.length > 0 && (
               <div className="mb-8">
-                <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
-                  ✨ Community picks
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
+                  <Sparkles size={13} />
+                  Community picks
                 </p>
                 <div className="flex flex-wrap gap-6">
                   {filteredDb.map(book => (
@@ -296,8 +293,9 @@ export default function Explore({ user }) {
 
             {filteredGoogle.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
-                  📚 From the wider library
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-[#5C7A52] uppercase tracking-widest mb-4">
+                  <Library size={13} />
+                  From the wider library
                 </p>
                 <div className="flex flex-wrap gap-6">
                   {filteredGoogle.map(book => (
@@ -311,10 +309,16 @@ export default function Explore({ user }) {
 
             <div ref={loaderRef} className="text-center py-6">
               {loadingMore && (
-                <p className="text-sm text-[#4A3423]/60 animate-pulse">Loading more books...</p>
+                <p className="flex items-center justify-center gap-1.5 text-sm text-[#4A3423]/60 animate-pulse">
+                  <Coffee size={14} />
+                  Brewing up more stories...
+                </p>
               )}
               {!hasMore && !loadingMore && (
-                <p className="text-xs text-[#4A3423]/50">You've reached the end of the library ☕</p>
+                <p className="flex items-center justify-center gap-1.5 text-xs text-[#4A3423]/50">
+                  <Coffee size={13} />
+                  You've reached the last shelf — time for a coffee break
+                </p>
               )}
             </div>
           </>

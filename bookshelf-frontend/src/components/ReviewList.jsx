@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Pencil, Trash2, MessageCircle, ChevronUp, ChevronDown, CornerDownRight, Send } from 'lucide-react';
 import api from '../api';
 
 function StarDisplay({ rating }) {
   return (
     <span className="text-xs">
-      <span className="text-amber-400">{'★'.repeat(rating)}</span>
-      <span className="text-coffee-200">{'★'.repeat(5 - rating)}</span>
+      <span className="text-amber-500">{'★'.repeat(rating)}</span>
+      <span className="text-[#D8C69B]">{'★'.repeat(5 - rating)}</span>
     </span>
   );
 }
@@ -23,7 +24,7 @@ function StarPicker({ rating, onChange }) {
           onClick={() => onChange(star)}
           className="text-xl leading-none transition"
         >
-          <span className={star <= (hovered || rating) ? 'text-amber-400' : 'text-coffee-200'}>
+          <span className={star <= (hovered || rating) ? 'text-amber-500' : 'text-[#D8C69B]'}>
             ★
           </span>
         </button>
@@ -68,26 +69,27 @@ function CommentNode({ comment, reviewId, user, onCommentPosted }) {
   return (
     <div className="mt-2">
       <div className="flex gap-2">
-        <div className="w-px bg-coffee-200 ml-1 flex-shrink-0" />
+        <div className="w-px bg-[#D8C69B] ml-1 flex-shrink-0" />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-sans text-[11px] font-semibold text-coffee-600">
+            <span className="text-[11px] font-semibold text-[#4A3423]">
               {comment.username}
             </span>
-            <span className="font-sans text-[10px] text-coffee-300">
+            <span className="text-[10px] text-[#4A3423]/50">
               {timeAgo(comment.created_at)}
             </span>
           </div>
-          <p className="font-sans text-[11px] text-coffee-600 leading-relaxed">
+          <p className="text-[11px] text-[#4A3423]/90 leading-relaxed">
             {comment.body}
           </p>
 
           {user && (
             <button
               onClick={() => setReplying(!replying)}
-              className="font-sans text-[10px] text-coffee-400 hover:text-coffee-600 mt-1 transition-colors"
+              className="flex items-center gap-1 text-[10px] font-medium text-[#5C7A52] hover:text-[#4A3423] mt-1 transition-colors"
             >
-              {replying ? 'cancel' : '↩ reply'}
+              <CornerDownRight size={11} />
+              {replying ? 'cancel' : 'reply'}
             </button>
           )}
 
@@ -97,13 +99,15 @@ function CommentNode({ comment, reviewId, user, onCommentPosted }) {
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder={`Reply to ${comment.username}...`}
-                className="flex-1 text-[11px] bg-white border border-coffee-200 rounded-lg px-2 py-1.5 text-coffee-700 placeholder-coffee-300 focus:outline-none focus:ring-1 focus:ring-coffee-300"
+                className="flex-1 text-[11px] bg-[#FFFDF6] px-2 py-1.5 text-[#4A3423] placeholder-[#4A3423]/40 focus:outline-none"
+                style={{ border: '1.5px solid #D8C69B', borderRadius: '10px' }}
                 onKeyDown={(e) => e.key === 'Enter' && handleReply()}
               />
               <button
                 onClick={handleReply}
                 disabled={submitting || !replyText.trim()}
-                className="text-[11px] bg-[#5c3d2e] text-[#faf7f2] px-3 py-1.5 rounded-lg disabled:opacity-50 hover:bg-[#3d2b1f] transition-colors"
+                className="text-[11px] font-semibold px-3 py-1.5 disabled:opacity-50 transition"
+                style={{ background: '#A3B899', color: '#33422F', border: '2px solid #4A3423', borderRadius: '10px' }}
               >
                 {submitting ? '...' : 'Send'}
               </button>
@@ -165,15 +169,17 @@ function CommentSection({ reviewId, user }) {
     <div className="mt-2">
       <button
         onClick={() => setOpen(!open)}
-        className="font-sans text-[10px] text-coffee-400 hover:text-coffee-600 tracking-wide transition-colors"
+        className="flex items-center gap-1 text-[10px] font-semibold text-[#5C7A52] hover:text-[#4A3423] tracking-wide transition-colors"
       >
-        {open ? '▲ hide replies' : '💬 replies'}
+        <MessageCircle size={12} />
+        {open ? 'hide replies' : 'replies'}
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       </button>
 
       {open && (
         <div className="mt-2 space-y-1">
           {comments.length === 0 && (
-            <p className="font-sans text-[10px] text-coffee-300 italic">No replies yet</p>
+            <p className="text-[10px] text-[#4A3423]/50 italic">No replies yet</p>
           )}
 
           {comments.map((c) => (
@@ -192,14 +198,17 @@ function CommentSection({ reviewId, user }) {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a reply..."
-                className="flex-1 text-[11px] bg-white border border-coffee-200 rounded-lg px-2 py-1.5 text-coffee-700 placeholder-coffee-300 focus:outline-none focus:ring-1 focus:ring-coffee-300"
+                className="flex-1 text-[11px] bg-[#FFFDF6] px-2 py-1.5 text-[#4A3423] placeholder-[#4A3423]/40 focus:outline-none"
+                style={{ border: '1.5px solid #D8C69B', borderRadius: '10px' }}
                 onKeyDown={(e) => e.key === 'Enter' && handlePost()}
               />
               <button
                 onClick={handlePost}
                 disabled={submitting || !newComment.trim()}
-                className="text-[11px] bg-[#5c3d2e] text-[#faf7f2] px-3 py-1.5 rounded-lg disabled:opacity-50 hover:bg-[#3d2b1f] transition-colors"
+                className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 disabled:opacity-50 transition"
+                style={{ background: '#A3B899', color: '#33422F', border: '2px solid #4A3423', borderRadius: '10px' }}
               >
+                <Send size={11} />
                 {submitting ? '...' : 'Post'}
               </button>
             </div>
@@ -210,7 +219,6 @@ function CommentSection({ reviewId, user }) {
   );
 }
 
-// Inline edit form — shows inside the review card
 function EditReviewForm({ review, onSave, onCancel }) {
   const [rating, setRating] = useState(review.rating);
   const [body, setBody] = useState(review.body || '');
@@ -238,20 +246,22 @@ function EditReviewForm({ review, onSave, onCancel }) {
         onChange={(e) => setBody(e.target.value)}
         placeholder="Update your thoughts... (optional)"
         rows={3}
-        className="w-full border border-coffee-200 rounded px-3 py-2 font-sans text-xs text-coffee-700 bg-white resize-none focus:outline-none focus:border-coffee-400"
+        className="w-full px-3 py-2 text-xs text-[#4A3423] bg-[#FFFDF6] resize-none focus:outline-none"
+        style={{ border: '2px solid #D8C69B', borderRadius: '12px' }}
       />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <div className="flex gap-2">
         <button
           onClick={handleSave}
           disabled={submitting}
-          className="text-xs bg-[#5c3d2e] text-[#faf7f2] px-3 py-1.5 rounded-lg hover:bg-[#3d2b1f] transition-colors disabled:opacity-50"
+          className="text-xs font-semibold px-3 py-1.5 disabled:opacity-50 transition"
+          style={{ background: '#A3B899', color: '#33422F', border: '2px solid #4A3423', borderRadius: '10px' }}
         >
           {submitting ? 'Saving...' : 'Save'}
         </button>
         <button
           onClick={onCancel}
-          className="text-xs text-coffee-400 hover:text-coffee-600 px-3 py-1.5 transition-colors"
+          className="text-xs font-medium text-[#4A3423]/60 hover:text-[#4A3423] px-3 py-1.5 transition-colors"
         >
           Cancel
         </button>
@@ -265,7 +275,6 @@ export default function ReviewList({ reviews: initialReviews, user }) {
   const [editingId, setEditingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  // keep in sync if parent re-fetches
   useEffect(() => {
     setReviews(initialReviews);
   }, [initialReviews]);
@@ -274,10 +283,7 @@ export default function ReviewList({ reviews: initialReviews, user }) {
 
   const handleSaveEdit = (updatedReview) => {
     setReviews(prev =>
-      prev.map(r => r.id === updatedReview.id
-        ? { ...r, ...updatedReview }
-        : r
-      )
+      prev.map(r => r.id === updatedReview.id ? { ...r, ...updatedReview } : r)
     );
     setEditingId(null);
   };
@@ -285,7 +291,7 @@ export default function ReviewList({ reviews: initialReviews, user }) {
   const handleDelete = async (reviewId) => {
     const confirmed = window.confirm('Delete this review? This cannot be undone.');
     if (!confirmed) return;
-    
+
     setDeletingId(reviewId);
     try {
       await api.delete(`/reviews/${reviewId}`);
@@ -299,14 +305,14 @@ export default function ReviewList({ reviews: initialReviews, user }) {
 
   if (reviews.length === 0) {
     return (
-      <p className="font-sans text-xs text-coffee-400 text-center py-4">
+      <p className="text-xs text-[#4A3423]/50 text-center py-6">
         No reviews yet — be the first!
       </p>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {reviews.map((review) => {
         const isOwner = currentUsername && review.username === currentUsername;
         const isEditing = editingId === review.id;
@@ -315,56 +321,47 @@ export default function ReviewList({ reviews: initialReviews, user }) {
         return (
           <div
             key={review.id}
-            className="bg-coffee-50 border border-coffee-200 rounded-lg p-3"
+            className="bg-[#FFFDF6] p-4 transition-transform hover:-translate-y-0.5"
+            style={{
+              border: '2.5px solid #4A3423',
+              borderRadius: '20px 24px 18px 22px',
+              boxShadow: '3px 3px 0 #4A3423',
+            }}
           >
-            {/* Header row */}
             <div className="flex items-center justify-between mb-1">
-              <span className="font-sans text-xs font-semibold text-coffee-600">
-                {review.username}
-              </span>
+              <span className="text-xs font-bold text-[#4A3423]">{review.username}</span>
               <div className="flex items-center gap-2">
-                <span className="font-sans text-xs text-coffee-400">
-                  {timeAgo(review.created_at)}
-                </span>
-                {/* Edit + delete — only for your own reviews */}
+                <span className="text-xs text-[#4A3423]/50">{timeAgo(review.created_at)}</span>
                 {isOwner && !isEditing && (
                   <div className="flex items-center gap-1 ml-1">
                     <button
                       onClick={() => setEditingId(review.id)}
-                      className="text-[10px] text-coffee-400 hover:text-coffee-600 transition-colors px-1"
+                      className="text-[#4A3423]/50 hover:text-[#5C7A52] transition-colors p-1"
                       title="Edit review"
                     >
-                      ✏️
+                      <Pencil size={12} />
                     </button>
                     <button
                       onClick={() => handleDelete(review.id)}
                       disabled={isDeleting}
-                      className="text-[10px] text-coffee-400 hover:text-red-400 transition-colors px-1 disabled:opacity-50"
+                      className="text-[#4A3423]/50 hover:text-red-500 transition-colors p-1 disabled:opacity-50"
                       title="Delete review"
                     >
-                      {isDeleting ? '...' : '🗑️'}
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Star rating */}
             <StarDisplay rating={review.rating} />
 
-            {/* Body or inline edit form */}
             {isEditing ? (
-              <EditReviewForm
-                review={review}
-                onSave={handleSaveEdit}
-                onCancel={() => setEditingId(null)}
-              />
+              <EditReviewForm review={review} onSave={handleSaveEdit} onCancel={() => setEditingId(null)} />
             ) : (
               <>
                 {review.body && (
-                  <p className="font-serif text-xs text-coffee-700 mt-2 leading-relaxed">
-                    {review.body}
-                  </p>
+                  <p className="text-xs text-[#4A3423]/90 mt-2 leading-relaxed">{review.body}</p>
                 )}
                 <CommentSection reviewId={review.id} user={user} />
               </>
