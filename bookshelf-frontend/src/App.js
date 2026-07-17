@@ -39,8 +39,8 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/books" element={<Books user={user} />} />
-          <Route path="/login" element={user ? <Navigate to="/books" /> : <Login onLogin={handleLogin} />} />
-          <Route path="/signup" element={user ? <Navigate to="/books" /> : <Signup onLogin={handleLogin} />} />
+          <Route path="/login" element={user ? <Navigate to="/shelf" /> : <Login onLogin={handleLogin} />} />
+          <Route path="/signup" element={user ? <Navigate to="/shelf" /> : <Signup onLogin={handleLogin} />} />
           <Route path="/explore" element={<Explore user={user} />} />
           <Route path="/shelf" element={<MyShelf user={user} />} />
           <Route path="/books/:bookId/discussion" element={<Discussion user={user} />} />
