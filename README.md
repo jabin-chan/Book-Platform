@@ -26,7 +26,7 @@ React, Tailwind CSS, Node.js + Express, PostgreSQL, Google Books API
 4. `cd frontend && npm install && npm start` (use `<your frontend start command>`)
 
 ## Running tests
-Tests use Jest. The database and Google Books API are mocked.
+Jest unit tests with Google Books adapter coverage. The database and Google Books API are mocked.
 
 ## Git workflow
 - Branches: `feature/...`, `fix/...`, `docs/...`, `ci/...`
