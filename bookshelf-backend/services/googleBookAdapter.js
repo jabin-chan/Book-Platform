@@ -5,6 +5,7 @@
 
 const adaptGoogleVolume = (item) => {
     const info = item.volumeInfo || {};
+    const year = parseInt(info.publishedDate?.substring(0, 4), 10);
   
     return {
       google_id: item.id,
@@ -12,9 +13,7 @@ const adaptGoogleVolume = (item) => {
       author: (info.authors || []).join(', '),
       genre: (info.categories || [''])[0],
       description: info.description || '',
-      published_year: info.publishedDate
-        ? parseInt(info.publishedDate.substring(0, 4))
-        : null,
+      published_year: Number.isNaN(year) ? null : year,
       cover: info.imageLinks?.thumbnail || null,
       isbn:
         (info.industryIdentifiers || []).find((i) => i.type === 'ISBN_13')
