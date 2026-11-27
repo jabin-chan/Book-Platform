@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 const pool = require('../db/pool');
-const { adaptGoogleVolume } = require('../services/googleBookAdapter');
 const { createBookData, BookValidationError } = require('../services/bookFactory');
+const { searchBooks } = require('../services/bookSearch');
 
 const {
   getBooks,
@@ -20,26 +19,9 @@ const { authenticate } = require('../middleware/auth');
 // GET /api/books/search?q=harry
 // ======================================================
 router.get('/search', async (req, res) => {
-  const { q } = req.query;
-
-  if (!q || q.trim().length < 2) {
-    return res.json([]);
-  }
-
   try {
-    const result = await pool.query(
-      `
-      SELECT *
-      FROM books
-      WHERE title ILIKE $1
-         OR author ILIKE $1
-      ORDER BY title ASC
-      LIMIT 10
-      `,
-      [`%${q}%`]
-    );
-
-    res.json(result.rows);
+    const books = await searchBooks('local', req.query.q);
+    res.json(books);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Search failed' });
@@ -52,35 +34,14 @@ router.get('/search', async (req, res) => {
 // GET /api/books/google?q=harry&startIndex=0
 // ======================================================
 router.get('/google', async (req, res) => {
-  const { q, startIndex = 0 } = req.query;
-
-  if (!q) {
-    return res.json([]);
-  }
-
   try {
-    const response = await axios.get(
-      'https://www.googleapis.com/books/v1/volumes',
-      {
-        params: {
-          q,
-          key: process.env.GOOGLE_BOOKS_KEY,
-          maxResults: 20,
-          startIndex: parseInt(startIndex),
-          printType: 'books',
-        },
-      }
-    );
-
-    // Adapter converts Google's format into our internal book shape
-    const books = (response.data.items || []).map(adaptGoogleVolume);
-
+    const books = await searchBooks('google', req.query.q, {
+      startIndex: req.query.startIndex,
+    });
     res.json(books);
   } catch (err) {
     console.error('Google Books error:', err.message);
-    res.status(500).json({
-      error: 'Google Books fetch failed',
-    });
+    res.status(500).json({ error: 'Google Books fetch failed' });
   }
 });
 
