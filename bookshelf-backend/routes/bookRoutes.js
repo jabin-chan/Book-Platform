@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const pool = require('../db/pool');
+const { adaptGoogleVolume } = require('../services/googleBookAdapter');
 
 const {
   getBooks,
@@ -70,25 +71,8 @@ router.get('/google', async (req, res) => {
       }
     );
 
-    const books = (response.data.items || []).map((item) => {
-      const info = item.volumeInfo;
-
-      return {
-        google_id: item.id,
-        title: info.title || 'Unknown Title',
-        author: (info.authors || []).join(', '),
-        genre: (info.categories || [''])[0],
-        description: info.description || '',
-        published_year: info.publishedDate
-          ? parseInt(info.publishedDate.substring(0, 4))
-          : null,
-        cover: info.imageLinks?.thumbnail || null,
-        isbn:
-          (info.industryIdentifiers || [])
-            .find((i) => i.type === 'ISBN_13')
-            ?.identifier || null,
-      };
-    });
+    // Adapter converts Google's format into our internal book shape
+    const books = (response.data.items || []).map(adaptGoogleVolume);
 
     res.json(books);
   } catch (err) {
@@ -98,7 +82,6 @@ router.get('/google', async (req, res) => {
     });
   }
 });
-
 
 // ======================================================
 // Auto-save Google Book into database
