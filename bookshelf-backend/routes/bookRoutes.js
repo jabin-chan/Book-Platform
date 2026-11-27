@@ -93,7 +93,7 @@ router.post('/save-from-google', authenticate, async (req, res) => {
     const book = createBookData('google', req.body);
 
     const existing = await pool.query(
-      'SELECT * FROM books WHERE title ILIKE $1 AND author ILIKE $2',
+      'SELECT * FROM books WHERE LOWER(title) = LOWER($1) AND LOWER(author) = LOWER($2)',
       [book.title, book.author]
     );
 
