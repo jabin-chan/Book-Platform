@@ -1,4 +1,5 @@
 const pool = require('../db/pool');
+const { createBookData, BookValidationError } = require('../services/bookFactory');
 
 // ======================================================
 // GET all books
@@ -69,74 +70,39 @@ const getBook = async (req, res) => {
 };
 
 // ======================================================
-// CREATE book
+// CREATE book (manual entry)
 // POST /api/books
 // ======================================================
 const createBook = async (req, res) => {
-  const {
-    title,
-    author,
-    genre,
-    description,
-    published_year,
-    cover_url,
-  } = req.body;
-
-  if (!title || !author) {
-    return res.status(400).json({
-      error: 'Title and author are required',
-    });
-  }
-
-  if (title.trim().length < 1 || title.trim().length > 500) {
-    return res.status(400).json({
-      error: 'Title must be between 1 and 500 characters',
-    });
-  }
-
-  if (
-    published_year &&
-    (published_year < 1000 ||
-      published_year > new Date().getFullYear())
-  ) {
-    return res.status(400).json({
-      error: 'Invalid published year',
-    });
-  }
-
   try {
+    // Factory applies the validation rules and builds the DB-ready object
+    const book = createBookData('manual', req.body, req.user.id);
+
     const result = await pool.query(
       `
       INSERT INTO books
-      (
-        title,
-        author,
-        genre,
-        description,
-        cover_url,
-        published_year,
-        added_by
-      )
+      (title, author, genre, description, cover_url, published_year, added_by)
       VALUES ($1,$2,$3,$4,$5,$6,$7)
       RETURNING *
       `,
       [
-        title.trim(),
-        author.trim(),
-        genre || null,
-        description || null,
-        cover_url || null,
-        published_year || null,
-        req.user.id,
+        book.title,
+        book.author,
+        book.genre,
+        book.description,
+        book.cover_url,
+        book.published_year,
+        book.added_by,
       ]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    if (err instanceof BookValidationError) {
+      return res.status(400).json({ error: err.message });
+    }
     console.error(err);
-    res.status(500).json({
-      error: 'Failed to create book',
-    });
+    res.status(500).json({ error: 'Failed to create book' });
   }
 };
 
